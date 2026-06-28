@@ -1,0 +1,42 @@
+---
+- name: Demo of Asynchronous Tasks
+  hosts: linux_targets
+  #become: yes
+  gather_facts: no
+  tasks:
+  - name: Task 1
+    command: sleep 30
+    when: inventory_hostname == "centos1"
+    async: 10
+    poll: 0
+    register: result1
+#
+  - name: Task 2
+    command: sleep 5
+    when: inventory_hostname == "debian1"
+    async: 10
+    poll: 0
+    register: result2
+#
+  - name: Task 3
+    command: sleep 5
+    when: inventory_hostname == "rocky1"
+    async: 10
+    poll: 0
+    register: result3
+#
+  - name: Task 4
+    command: sleep 40
+    when: inventory_hostname == "rocky2"
+    async: 45
+    poll: 1
+    register: result4
+#
+  - name: Show Registered Context
+    debug:
+      var: result1
+#
+  - name: Show Registered Context as Jinja2
+    debug:
+      msg: "{{ result1 }}"
+...
