@@ -1,0 +1,30 @@
+---
+- name: Mastering Async Status Checking
+  hosts: linux_targets
+  gather_facts: no
+  tasks:
+    - name: Task 1 - Launch long sleep in background
+      command: sleep 10
+      when: inventory_hostname == "centos1"
+      async: 30
+      poll: 0
+      register: result1
+
+    - name: Task 2 - Wait 5 seconds to simulate other work
+      command: sleep 5
+      when: inventory_hostname == "debian1"
+
+    - name: Task 3 - Actively wait until Task 1 finishes on centos1
+      async_status:
+        jid: "{{ hostvars['centos1']['result1']['ansible_job_id'] }}"
+      when: inventory_hostname == "centos1"
+      register: job_check
+      until: job_check.finished == 1
+      retries: 15
+      delay: 1
+
+    - name: Task 4 - Debug the final completed status
+      debug:
+        var: job_check
+      when: inventory_hostname == "centos1"
+...
